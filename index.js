@@ -60,7 +60,9 @@ if (!FORCE_FETCH && lastFetchTime != null) {
 
     var cachedtrendyTweetsString = localStorage.getItem('trendyTweets');
     cachedtrendyTweets = JSON.parse(cachedtrendyTweetsString);
-    console.log(cachedtrendyTweets);
+    cachedtrendyTweets.forEach((tweet) => {
+      printTweet(tweet);
+    });
 
 
     process.exit();
@@ -92,12 +94,20 @@ getMemberList().then((users) => {
         if("entities" in status && "media" in status.entities) {
           if (status.favorite_count >= MIN_FAV) {
 
-            trendyTweets.pushAndSave(status);
-            console.log('@'+status.user.screen_name + 
-              ' ' +status.full_text + 
-              ' | ♥ ' + status.favorite_count + 
-              ' | RT '+ status.retweet_count+ 
-              ' ('+status.id+')');
+            let tweet = {
+              retweet_count: status.retweet_count,
+              favorite_count: status.favorite_count,
+              user: {
+                name: status.user.name,
+                screen_name: status.user.screen_name
+              },
+              full_text: status.full_text,
+              id: status.id
+            };
+
+            trendyTweets.pushAndSave(tweet);
+            printTweet(tweet);
+            
           }
         }
       });
@@ -106,6 +116,14 @@ getMemberList().then((users) => {
 });
 
 // Print format functions
+function printTweet(tweet) {
+  console.log('@'+tweet.user.screen_name + 
+              ' ' +tweet.full_text + 
+              ' | ♥ ' + tweet.favorite_count + 
+              ' | RT '+ tweet.retweet_count+ 
+              ' ('+tweet.id+')');
+}
+
 
 // TODO
 
@@ -119,6 +137,8 @@ function getMemberList() {
     });
 }
 
+
+// Deprecated :p
 function getListStatus(_max_id) {
   let param = Object.assign({}, paramTemplate);
   if(_max_id !== undefined)
