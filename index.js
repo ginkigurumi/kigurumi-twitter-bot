@@ -101,7 +101,7 @@ getMemberList().then((users) => {
                 screen_name: status.user.screen_name
               },
               full_text: status.full_text,
-              id: status.id
+              id_str: status.id_str
             };
 
             trendyTweets.pushAndSave(tweet);
@@ -120,7 +120,7 @@ function printTweet(tweet) {
               ' ' +tweet.full_text + 
               ' | ♥ ' + tweet.favorite_count + 
               ' | RT '+ tweet.retweet_count+ 
-              ' ('+tweet.id+')');
+              ' ('+tweet.id_str+')');
 }
 
 
@@ -157,6 +157,7 @@ function getListStatus(_max_id) {
           //   console.log("url: " + media.url);
           // })
           // console.log("*");
+
 
           if(status.favorite_count < MIN_FAV)
             return;
