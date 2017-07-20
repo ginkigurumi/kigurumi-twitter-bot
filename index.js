@@ -7,7 +7,7 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 }
 
 // config
-let MIN_FAV = 10;
+let MIN_FAV = 100;
 let FORCE_FETCH = false; // Will force fetch from Twitter regardless of the timeout
 // end config
 
@@ -63,7 +63,6 @@ if (!FORCE_FETCH && lastFetchTime != null) {
     cachedtrendyTweets.forEach((tweet) => {
       printTweet(tweet);
     });
-
 
     process.exit();
   }
