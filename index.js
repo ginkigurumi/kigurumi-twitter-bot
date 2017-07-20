@@ -82,7 +82,7 @@ getMemberList().then((users) => {
   // Go through each member's profile and find good tweets ;)
   // Requests / 15-min window (app auth): 1500
   var firstTen = Array.from(users.slice(0, 10));
-  firstTen.forEach((user) => {
+  users.forEach((user) => {
     console.log(user.screen_name);
     var param = Object.assign({}, userParamTemplate);
     param.screen_name = user.screen_name;
