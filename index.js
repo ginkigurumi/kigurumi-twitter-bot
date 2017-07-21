@@ -19,9 +19,9 @@ var client = new Twitter({
 });
 
 var paramTemplate = {
-  list_id: 83481953,
+  list_id: '888396394922352640',
   slug: "kigurumi",
-  owner_screen_name: "Aoi_chan121",
+  owner_screen_name: "inorihestia",
   include_rts: false,
   count: 10000,
   tweet_mode: "extended"
@@ -122,9 +122,6 @@ function printTweet(tweet) {
               ' | RT '+ tweet.retweet_count+ 
               ' ('+tweet.id_str+')');
 }
-
-
-// TODO
 
 // Util Functions
 function getMemberList() {
