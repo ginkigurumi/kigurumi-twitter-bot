@@ -1,7 +1,9 @@
 'use strict';
 
 require('dotenv').config()
+const moment = require('moment');
 const SafeTwitter = require('./lib/safeTwitter');
+
 
 const client = new SafeTwitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -10,8 +12,19 @@ const client = new SafeTwitter({
   delay: 1000
 });
 
+const botClient = new SafeTwitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  delay: 0
+});
+
 // config
+const ENABLE_BOT = true;
+
 const MIN_FAV = 100;
+const FROM_N_SECS_AGO = 60*60*24*30;
 
 // templates
 const paramTemplate = {
@@ -43,11 +56,19 @@ function crawl() {
 function crawlUser(chain, user) {
   return chain.then(() => getUserTimeline(user))
     .then((timeline) => timeline.filter(trendyTweetFilter))
-    .then((timeline) => timeline.forEach(handleTrendyTweet));
+    .then((timeline) => timeline.reduce(handleTrendyTweet, Promise.resolve()));
 }
 
-function handleTrendyTweet(tweet) {
+function handleTrendyTweet(chain, tweet) {
   printTweet(tweet);
+
+  if(ENABLE_BOT){
+    return chain
+      .then(() => retweet(tweet))
+      .then(() => favourite(tweet));
+  } else {
+    return chain;
+  }
 }
 
 // utils
@@ -67,17 +88,41 @@ function getUserTimeline(user) {
   param.screen_name = user.screen_name;
   return client.get('statuses/user_timeline', param)
     .catch((err) => {
-      console.error('[ERROR] statuses/user_timeline fail: @', user.screen_name + ' ' + err.message);
+      console.error('[ERROR] statuses/user_timeline fail: @' + user.screen_name, err);
       return [];
-    });;
+    });
 }
 
 function trendyTweetFilter(tweet) {
   if("entities" in tweet && "media" in tweet.entities)
-    if (tweet.favorite_count >= MIN_FAV)
-      return true;
+    if (tweet.favorite_count >= MIN_FAV) {
+      var created_at = moment(tweet.created_at, 'dd MMM DD HH:mm:ss ZZ YYYY', 'en');
+
+      if(created_at.isAfter(moment().subtract(FROM_N_SECS_AGO, 'seconds')))
+        return true;
+    }
 
   return false;
+}
+
+function retweet(tweet) {
+  return botClient.post('statuses/retweet/' + tweet.id_str, {})
+    .catch((errors) => {
+      // "message": "You have already retweeted this tweet."
+      if(typeof errors.find((err) => 'code' in err && err.code === 327) !== undefined)
+        return;
+      console.error('[ERROR] statuses/retweet fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, err)
+    });
+}
+
+function favourite(tweet) {
+  return botClient.post('favorites/create', {id: tweet.id_str})
+    .catch((errors) => {
+      // "message": "You have already favorited this status."
+      if(typeof errors.find((err) => 'code' in err && err.code === 139) !== undefined)
+        return;
+      console.error('[ERROR] favorites/create fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, err)
+    });
 }
 
 function printTweet(tweet) {
