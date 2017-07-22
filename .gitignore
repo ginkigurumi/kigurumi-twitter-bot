@@ -57,3 +57,6 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# Scratch folder for localstorage of trendy tweets
+scratch
