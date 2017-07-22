@@ -3,7 +3,7 @@
 require('dotenv').config()
 const moment = require('moment');
 const SafeTwitter = require('./lib/safeTwitter');
-
+const storage = require('node-persist');
 
 const client = new SafeTwitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
@@ -24,7 +24,7 @@ const botClient = new SafeTwitter({
 const ENABLE_BOT = true;
 
 const MIN_FAV = 100;
-const FROM_N_SECS_AGO = 60*60*24*30;
+const FROM_N_SECS_AGO = 60*60*24*10;
 
 // templates
 const paramTemplate = {
@@ -43,8 +43,14 @@ const userParamTemplate = {
   tweet_mode: 'extended'
 }
 
+const storageOptions = {
+  dir: 'persist',
+  ttl: FROM_N_SECS_AGO * 1000
+}
+
 // main
-crawl()
+storage.init(storageOptions)
+  .then(crawl)
   .catch(console.error);
 
 function crawl() {
@@ -62,10 +68,20 @@ function crawlUser(chain, user) {
 function handleTrendyTweet(chain, tweet) {
   printTweet(tweet);
 
+  // handled before, skip
+  if(storage.getItemSync(tweet.id_str) !== undefined)
+    return chain;
+
   if(ENABLE_BOT){
     return chain
       .then(() => retweet(tweet))
-      .then(() => favourite(tweet));
+      .then(() => favourite(tweet))
+      .then(() => {
+        // persist favourite / retweet -ed item
+        return storage.setItem(tweet.id_str, {
+          screen_name: tweet.user.screen_name
+        });
+      });
   } else {
     return chain;
   }
@@ -109,9 +125,9 @@ function retweet(tweet) {
   return botClient.post('statuses/retweet/' + tweet.id_str, {})
     .catch((errors) => {
       // "message": "You have already retweeted this tweet."
-      if(typeof errors.find((err) => 'code' in err && err.code === 327) !== undefined)
-        return;
-      console.error('[ERROR] statuses/retweet fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, err)
+      // if(Array.isArray(errors) && errors.length === 1 && 'code' in errors[0] && errors[0].code === 327)
+      //   return;
+      console.error('[ERROR] statuses/retweet fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, errors)
     });
 }
 
@@ -119,9 +135,9 @@ function favourite(tweet) {
   return botClient.post('favorites/create', {id: tweet.id_str})
     .catch((errors) => {
       // "message": "You have already favorited this status."
-      if(typeof errors.find((err) => 'code' in err && err.code === 139) !== undefined)
-        return;
-      console.error('[ERROR] favorites/create fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, err)
+      // if(Array.isArray(errors) && errors.length === 1 && 'code' in errors[0] && errors[0].code === 139)
+      //   return;
+      console.error('[ERROR] favorites/create fail: @' + tweet.user.screen_name + ' ' + tweet.id_str, errors)
     });
 }
 
