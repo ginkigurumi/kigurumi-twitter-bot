@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const SafeTwitter = require('./lib/safeTwitter');
+const SafeTwitter = require('../lib/safeTwitter');
 
 const botClient = new SafeTwitter({
   consumer_key: process.env.TWITTER_CONSUMER_KEY,
