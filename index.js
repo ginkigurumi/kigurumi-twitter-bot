@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 var Twitter = require('twitter');
 
 if (typeof localStorage === "undefined" || localStorage === null) {

@@ -1,6 +1,6 @@
 'use strict';
 
-require('dotenv').config()
+require('dotenv').config();
 const moment = require('moment');
 const SafeTwitter = require('./lib/safeTwitter');
 const storage = require('node-persist');
