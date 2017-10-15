@@ -1,6 +1,6 @@
 'use strict';
 
-require('dotenv').config();
+require('dotenv').config({path: '../.env'});
 
 const SafeTwitter = require('../lib/safeTwitter');
 
@@ -21,8 +21,8 @@ const fromParamTemplate = {
 };
 
 const toParamTemplate = {
-  slug: "test2",
-  owner_screen_name: "kigurumihub_sb2"
+  slug: "subscribe",
+  owner_screen_name: "kigurumihub"
 };
 
 getUserFromList()
