@@ -29,8 +29,8 @@ const FROM_N_SECS_AGO = 60*60*24*10;
 // templates
 const paramTemplate = {
   list_id: '888396394922352640',
-  slug: "kigurumi",
-  owner_screen_name: "inorihestia",
+  slug: "subscribe",
+  owner_screen_name: "kigurumihub",
   include_rts: false,
   count: 10000,
   tweet_mode: "extended"
