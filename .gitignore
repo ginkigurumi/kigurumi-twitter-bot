@@ -61,3 +61,6 @@ typings/
 # Scratch folder for localstorage of trendy tweets
 scratch
 persist
+
+# cofig file for copying user lists
+helper/config.json
